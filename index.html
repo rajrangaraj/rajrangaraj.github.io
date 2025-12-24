@@ -687,25 +687,19 @@
         <div id="articles" class="section">
             <div class="card">
                 <h2>Latest Articles</h2>
-                <div class="article-list">
-                    <div class="article-item">
-                        <h3>Building Resilient Microservices: Lessons from Production</h3>
-                        <div class="article-meta">Published on December 15, 2024 • 8 min read</div>
-                        <p>Exploring patterns and practices for building fault-tolerant distributed systems that can handle failures gracefully...</p>
-                        <a href="#" class="btn">Read Full Article</a>
-                    </div>
-                    <div class="article-item">
-                        <h3>The Evolution of Cloud Architecture in 2024</h3>
-                        <div class="article-meta">Published on December 1, 2024 • 12 min read</div>
-                        <p>A comprehensive look at how cloud architecture patterns have evolved and what it means for modern applications...</p>
-                        <a href="#" class="btn">Read Full Article</a>
-                    </div>
-                    <div class="article-item">
-                        <h3>Leading Technical Teams: Beyond Code</h3>
-                        <div class="article-meta">Published on November 20, 2024 • 10 min read</div>
-                        <p>Insights on transitioning from individual contributor to technical leader and building high-performing teams...</p>
-                        <a href="#" class="btn">Read Full Article</a>
-                    </div>
+                <div id="articlesList" class="article-list">
+                    <!-- Articles loaded dynamically -->
+                    <p style="text-align: center; color: #888;">Loading articles...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Single Article View -->
+        <div id="article-view" class="section">
+            <div class="card">
+                <button onclick="showSection('articles')" class="btn" style="margin-bottom: 20px;">← Back to Articles</button>
+                <div id="articleContent">
+                    <!-- Article content loaded here -->
                 </div>
             </div>
         </div>
@@ -810,6 +804,150 @@
     </footer>
 
     <script>
+        // Articles data - In production, load from articles-list.json
+        let articlesData = [];
+
+        // Load articles on page load
+        async function loadArticles() {
+            try {
+                // Try to load from JSON file
+                const response = await fetch('articles-list.json');
+                articlesData = await response.json();
+                displayArticles(articlesData.articles);
+            } catch (error) {
+                // Fallback to sample data if file doesn't exist
+                articlesData = {
+                    articles: [
+                        {
+                            id: 1,
+                            title: "Building Resilient Microservices: Lessons from Production",
+                            excerpt: "Exploring patterns and practices for building fault-tolerant distributed systems that can handle failures gracefully...",
+                            date: "2024-12-15",
+                            readTime: 8,
+                            content: `
+                                <h1>Building Resilient Microservices: Lessons from Production</h1>
+                                <p class="article-meta">Published on December 15, 2024 • 8 min read</p>
+                                
+                                <p>After years of building and maintaining microservices at scale, I've learned that resilience isn't just about handling failures—it's about designing systems that gracefully degrade and recover.</p>
+                                
+                                <h2>Key Principles</h2>
+                                <p>1. <strong>Circuit Breakers:</strong> Prevent cascading failures by stopping requests to failing services.</p>
+                                <p>2. <strong>Bulkheads:</strong> Isolate resources to prevent one failure from taking down everything.</p>
+                                <p>3. <strong>Retries with Backoff:</strong> Try again, but intelligently.</p>
+                                
+                                <h2>Implementation Example</h2>
+                                <p>Here's how we implement circuit breakers in production...</p>
+                                
+                                <p>Remember: resilience is not a feature you add at the end—it must be designed in from the start.</p>
+                            `,
+                            tags: ["microservices", "architecture", "resilience"]
+                        },
+                        {
+                            id: 2,
+                            title: "The Evolution of Cloud Architecture in 2024",
+                            excerpt: "A comprehensive look at how cloud architecture patterns have evolved and what it means for modern applications...",
+                            date: "2024-12-01",
+                            readTime: 12,
+                            content: `
+                                <h1>The Evolution of Cloud Architecture in 2024</h1>
+                                <p class="article-meta">Published on December 1, 2024 • 12 min read</p>
+                                
+                                <p>Cloud architecture has come a long way. Let's explore the major shifts and what they mean for your applications.</p>
+                                
+                                <h2>Serverless Evolution</h2>
+                                <p>Serverless isn't just Lambda functions anymore. We're seeing entire applications built on serverless architectures with sophisticated orchestration.</p>
+                                
+                                <h2>Edge Computing</h2>
+                                <p>Moving computation closer to users has become not just possible, but practical and cost-effective.</p>
+                                
+                                <h2>Multi-Cloud Reality</h2>
+                                <p>Organizations are no longer betting on a single cloud provider...</p>
+                            `,
+                            tags: ["cloud", "aws", "architecture"]
+                        },
+                        {
+                            id: 3,
+                            title: "Leading Technical Teams: Beyond Code",
+                            excerpt: "Insights on transitioning from individual contributor to technical leader and building high-performing teams...",
+                            date: "2024-11-20",
+                            readTime: 10,
+                            content: `
+                                <h1>Leading Technical Teams: Beyond Code</h1>
+                                <p class="article-meta">Published on November 20, 2024 • 10 min read</p>
+                                
+                                <p>The transition from engineer to engineering leader is one of the hardest in tech. Here's what I've learned.</p>
+                                
+                                <h2>Your Job Changes Completely</h2>
+                                <p>You're no longer measured by your code output, but by your team's success.</p>
+                                
+                                <h2>Communication is Your New Superpower</h2>
+                                <p>Clear, consistent communication becomes more important than technical brilliance.</p>
+                                
+                                <h2>Building Trust</h2>
+                                <p>Trust is the foundation of high-performing teams. Here's how to build it...</p>
+                            `,
+                            tags: ["leadership", "management", "career"]
+                        }
+                    ]
+                };
+                displayArticles(articlesData.articles);
+            }
+        }
+
+        function displayArticles(articles) {
+            const container = document.getElementById('articlesList');
+            
+            if (!articles || articles.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #888;">No articles yet. Check back soon!</p>';
+                return;
+            }
+
+            container.innerHTML = articles.map(article => `
+                <div class="article-item">
+                    <h3>${article.title}</h3>
+                    <div class="article-meta">
+                        Published on ${formatDate(article.date)} • ${article.readTime} min read
+                        ${article.tags ? ' • ' + article.tags.map(tag => `<span style="color: #667eea;">#${tag}</span>`).join(' ') : ''}
+                    </div>
+                    <p>${article.excerpt}</p>
+                    <button onclick="viewArticle(${article.id})" class="btn">Read Full Article</button>
+                </div>
+            `).join('');
+        }
+
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString('en-US', options);
+        }
+
+        function viewArticle(articleId) {
+            const article = articlesData.articles.find(a => a.id === articleId);
+            
+            if (!article) {
+                alert('Article not found');
+                return;
+            }
+
+            const contentDiv = document.getElementById('articleContent');
+            
+            if (article.content) {
+                // If content is embedded
+                contentDiv.innerHTML = article.content;
+            } else if (article.file) {
+                // If content is in separate file
+                fetch(`articles/${article.file}`)
+                    .then(response => response.text())
+                    .then(html => {
+                        contentDiv.innerHTML = html;
+                    })
+                    .catch(error => {
+                        contentDiv.innerHTML = '<p>Error loading article. Please try again.</p>';
+                    });
+            }
+
+            showSection('article-view');
+        }
+
         function showSection(sectionId) {
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.remove('active');
@@ -838,6 +976,9 @@
                 menu.classList.remove('active');
             }
         });
+
+        // Load articles when page loads
+        document.addEventListener('DOMContentLoaded', loadArticles);
 
         document.getElementById('questionForm').addEventListener('submit', function(e) {
             e.preventDefault();
